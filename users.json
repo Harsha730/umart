@@ -1,0 +1,22 @@
+{"users":[{
+
+    "name" : "e90f58cd332f286ad53e2c6654f762c1:3f7daee0db6d2830c0872fcc0879f5ba",
+    "password" : "9f6e42bce5fce307ea789e1bd3cb8bb1:b0a555030982db2eaf7f73ffecdd7063",
+    "isActive" :true,
+    "token" : "MYVKvDGQF1Qrwo9DvZybgreftR7f8i92",
+    "comments" :" "
+},
+{
+    "name" : "ae63b8fdb9d9818ef64fb3a2d756873b:37b2615f4de7d6bb53ba1514e79e7981",
+    "password" : "1ddbf591b24007a2ef9af6c67afbbc63:af959477cd929b416560960720555cce",
+    "isActive" :true,
+    "token" : "PHMOE5B7mcFpNsoAe8c27QwVUmKLqR1q",
+    "comments" :" "
+},
+{
+    "name" : "a2c7ca7ffa00b6ebdaa15dbdcb46cf0e:78bd9bcf1621bf2e93678eefd8d1ca53",
+    "password" : "90cb1d355b8ed57a3bd43ee000060619:9701a5822a088cb2d1e173d1c7e16103d7a3bb7153f16f9685481737f0fb2568",
+    "isActive" :true,
+    "token" : "kIWN4KPqQrd59VwFTgh3kjwxxO2IkKp3",
+    "comments" :""
+}]}
