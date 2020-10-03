@@ -1,7 +1,4 @@
 #!/bin/bash
-pm2 kill
-pm2 start server.js
+cd /home/ec2-user/node-api/
 
-
-
-
+npm install -g
