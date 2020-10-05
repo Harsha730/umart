@@ -36,4 +36,4 @@ logger = logger(module);
 // Assigning the port to the server
 app.listen(port);
 
-logger.debug("Node API (updated) server started on port: '" + port)
+logger.debug("Node API server started on port: '" + port)
