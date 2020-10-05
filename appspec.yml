@@ -5,7 +5,7 @@ files:
     destination: /home/ec2-user/node-api-updated/
     overwrite: yes
 hooks:
-  BeforeInstall:
+  AfterInstall:
     - location: scripts/install_dependencies
       timeout: 300
       runas: root
