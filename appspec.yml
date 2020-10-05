@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /server.js
-    destination: /home/ec2-user/node-api
+    destination: /home/ec2-user/node-api/
 hooks:
   BeforeInstall:
     - location: scripts/install_dependencies
