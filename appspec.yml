@@ -3,6 +3,7 @@ os: linux
 files:
   - source: /server.js
     destination: /home/ec2-user/node-api/
+    overwrite: yes
 hooks:
   BeforeInstall:
     - location: scripts/install_dependencies
