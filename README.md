@@ -12,4 +12,4 @@ npm run start : This command will run the application.
 Note : You no need to re-run the project every time when you made changes, the applications will run automatically as nodemon will do the magic here.
 The complete technical flow and explanation of this project is summarized in
 
-UNITI-COMMERCE-APIs-Phase_0.docx
+UNITI-COMMERCE-APIs-Phase_0.docx 
