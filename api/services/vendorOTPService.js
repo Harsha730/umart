@@ -10,7 +10,7 @@ logger = logger(module) // Passing the module to the logger
 
 /* This service contains the logic, to update the existing vendor secret_key, timestamp for every OTP request in the DB 
  based on email*/
-exports.update_vendor = function (id, response, isPhone) {
+exports.update_vendor = function (id,response, isPhone) {
 
   // Creating and returning the Promise
 
@@ -48,50 +48,96 @@ exports.update_vendor = function (id, response, isPhone) {
         attributes: ['qr_code', 'phone', 'timestamp', 'secret_key'],
         // fetching vendor based on email
         where: clause,
+        include:[{
+          model:db.vendor_plan
+        }]
       }).then(vendor => {
         if (null == vendor) {
-          db.vendorAlias.findOne({
-            where: clause
-          }).then(vendor => {
-            if (null == vendor) {
-              logger.error("Unable to send OTP as vendor / executor not found with the mail/ phone #" + id);
-              reject(response.status(404).send("Unable to send OTP as your profile is not registered. Please register your profile. Thank you for your business."));
-            }
-            else if(true!=vendor.is_admin){
-                  logger.error("Vendor Alias is not admin to login #" + id);
-                reject(response.status(401).json("You are not authorized to login. Thank you for your business."));
-            }
-            else if(isPhone && !vendor.is_phone_verified){
-              logger.error("Vendor Alias phone is not verified to login #" + id);
-              reject(response.status(401).json("Your phone number is not verified. Please verify to login. Thank you for your business."));
-            }
-            /* else if(!isPhone && !vendor.is_email_verified){
-              logger.error("Vendor Alias phone is not verified to login #" + id);
-              reject(response.status(401).json("Your email is not verified. Please verify to login. Thank you for your business."));
-            } */
-            else {
-              phone = "+" + vendor.phone;
-              logger.info("found the executive to update");
-              //console.log(vendor.vendor_aliases);
-              // Updating the vendor with the latest timestamp and OTP
-              vendor.update({ timestamp: Date.now(), secret_key: otp });
-              if (isPhone) {
-                // Sending the OTP to vendor phone
-                phoneUtil.sendOTP(phone, otp);
-                resolve("OTP successfully sent to your registered mobile. Thank you for your business.");
-              } else {
-                // Sending the OTP to vendor mail
-                mailUtil.sendMail(id, "", "", "", "", "", false, true, otp);
-                logger.info("OTP sent successfully");
-                resolve("OTP successfully sent to your registered email. Thank you for your business.");
+              db.vendorAlias.findOne({
+                where: clause,
+                include:[{
+                  model:db.vendor
+                }]
+              }).then(alias => {
+                if (null == alias) {
+                  logger.error("Unable to send OTP as vendor / executor not found with the mail/ phone #" + id);
+                  reject(response.status(404).send("Unable to send OTP as your profile is not registered. Please register your profile. Thank you for your business."));
+                }
+                else if(true!=alias.is_admin){
+                      logger.error("Vendor Alias is not admin to login #" + id);
+                    reject(response.status(401).json("You are not authorized to login. Thank you for your business."));
+                }
+                else if(isPhone && !alias.is_phone_verified){
+                  logger.error("Vendor Alias phone is not verified to login #" + id);
+                  reject(response.status(401).json("Your phone number is not verified. Please verify to login. Thank you for your business."));
+                }
+                /* else if(!isPhone && !vendor.is_email_verified){
+                  logger.error("Vendor Alias phone is not verified to login #" + id);
+                  reject(response.status(401).json("Your email is not verified. Please verify to login. Thank you for your business."));
+                } */
+                else {
+                  db.vendor_plan.findOne({
+                    attributes: ["is_active", "end_date"],
+                    where: {vendor_id:alias.vendor.qr_code}
+                  }).then(vendor_plan=>{
+                    var dateDiff;
+                    if(null==vendor_plan)
+                    dateDiff=0;
+                    else{
+                      var currentDate=new Date(),
+                      end_date=new Date(vendor_plan.end_date),
+                      dateDiff=currentDate.getTime()-end_date.getTime();
+                    }
+                    var is_active=false;
+                    if(null!=vendor_plan)
+                    is_active=vendor_plan.is_active;
+                    if(null==vendor_plan||(true==is_active&&0>=dateDiff)){
+                  phone = "+" + alias.phone;
+                  logger.info("found the executive to update");
+                  //console.log(vendor.vendor_aliases);
+                  // Updating the vendor with the latest timestamp and OTP
+                  alias.update({ timestamp: Date.now(), secret_key: otp });
+                  if (isPhone) {
+                    // Sending the OTP to vendor phone
+                    phoneUtil.sendOTP(phone, otp);
+                    resolve("OTP successfully sent to your registered mobile. Thank you for your business.");
+                  } else {
+                    // Sending the OTP to vendor mail
+                    mailUtil.sendMail(id, "", "", "", "", "", false, true, otp);
+                    logger.info("OTP sent successfully");
+                    resolve("OTP successfully sent to your registered email. Thank you for your business.");
+                  }
+                } else if(null!=vendor_plan&&(0<dateDiff||false==is_active)){
+                  logger.error("Vendor Plan Expired");
+                  reject(response.status(403).json("Your account is not active. It is either expired/disabled and or not activated yet. Please reach out to umart44 admin to enable or renew your web services. Thank you for your business."));
+                }
+                })
               }
-            }
-          }).catch(error => {
-            logger.error("Error occured while update the vendor ::" + error);
-            reject(response.status(500).send("Internal Server Error! Unable to send OTP. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business."));
-          });
+              }).catch(error => {
+                logger.error("Error occured while update the vendor ::" + error);
+                reject(response.status(500).send("Internal Server Error! Unable to send OTP. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business."));
+              });
+         //   }
+         // })
         }
         else {
+          var qr_code=vendor.qr_code;
+          db.vendor_plan.findOne({
+            attributes: ["is_active", "end_date"],
+            where: {vendor_id:qr_code}
+          }).then(vendor_plan=>{
+            var dateDiff;
+            if(null==vendor_plan)
+            dateDiff=0;
+            else{
+              var currentDate=new Date(),
+              end_date=new Date(vendor.vendor_plan.end_date),
+              dateDiff=currentDate.getTime()-end_date.getTime();
+            }
+            var is_active=false;
+            if(null!=vendor_plan)
+            is_active=vendor_plan.is_active;
+            if(null==vendor_plan||(true==is_active&&0>=dateDiff)){
           phone = "+" + vendor.phone;
           logger.info("found the vendor to update");
           // Updating the vendor with the latest timestamp and OTP
@@ -107,6 +153,12 @@ exports.update_vendor = function (id, response, isPhone) {
             resolve("OTP successfully sent to your registered email. Thank you for your business.");
           }
         }
+        else if(null!=vendor_plan&&(0<dateDiff||false==is_active)){
+          logger.error("Vendor Plan Expired");
+          reject(response.status(403).json("Your account is not active. It is either expired/disabled and or not activated yet. Please reach out to umart44 admin to enable or renew your web services. Thank you for your business."));
+        }
+      })
+    }
       }).catch(error => {
         logger.error("Error occured while update the vendor ::" + error);
         reject(response.status(500).send("Internal Server Error! Unable to send OTP. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business."));
@@ -277,6 +329,12 @@ exports.verify_vendor = function (id, otp, isPhone, locale, response) {
                   model:db.gst_slabs
                 }
               ]
+            },
+            {
+              model:db.vendor_plan,
+              include:[{
+                model:db.plan
+              }]
             }
           ]
         }
@@ -285,9 +343,11 @@ exports.verify_vendor = function (id, otp, isPhone, locale, response) {
         //  console.log("in Vendor");
        //   console.log(vendor)
           if(null!=vendor){
+            if(null!=vendor.vendor_plan&&""==vendor.vendor_plan.payment_updated_date)
+            vendor.vendor_plan.payment_updated_date="trail-period";
           phone = "+" + vendor.phone;
-          if (vendor.short_name == null)
-            vendor.short_name = undefined;
+          /* if (vendor.short_name == null)
+          vendor.short_name = undefined; */
           vendor.city.country_id = undefined;
           if (vendor.logo == null)
             vendor.logo = "";
@@ -318,7 +378,8 @@ exports.verify_vendor = function (id, otp, isPhone, locale, response) {
               logo: vendor.logo,
               show_logo: vendor.show_logo,
               price_book:vendor.price_book,
-              role:"super-admin"
+              role:"super-admin",
+              plan:vendor.vendor_plan
             },
           )
           }
@@ -347,6 +408,9 @@ exports.verify_vendor = function (id, otp, isPhone, locale, response) {
                       model:db.gst_slabs
                     }
                   ]
+                },
+                {
+                  model:db.vendor_plan
                 }
               ]
             }
@@ -355,12 +419,14 @@ exports.verify_vendor = function (id, otp, isPhone, locale, response) {
               var phone,resObj;
      //         console.log(JSON.parse(JSON.stringify(vendor)))
               if(vendor!=null){
+                if(null!=vendor.vendor_plan&&""==vendor.vendor_plan.payment_updated_date)
+            vendor.vendor_plan.payment_updated_date="trail-period";
                 var admin_name="";
               if(null!=vendor.vendor_aliases&&0!=vendor.vendor_aliases.length)
               admin_name=vendor.vendor_aliases[0].name;
               phone = "+" + vendor.phone;
-              if (vendor.short_name == null)
-                vendor.short_name = undefined;
+             /*  if (vendor.short_name == null)
+                vendor.short_name = undefined; */
               vendor.city.country_id = undefined;
               if (vendor.logo == null)
                 vendor.logo = "";
@@ -392,7 +458,8 @@ exports.verify_vendor = function (id, otp, isPhone, locale, response) {
                   logo: vendor.logo,
                   show_logo: vendor.show_logo,
                   price_book:vendor.price_book,
-                  role:"admin"
+                  role:"admin",
+                  plan:vendor.vendor_plan
                 },
               )
               }

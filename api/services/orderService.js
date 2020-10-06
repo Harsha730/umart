@@ -27,6 +27,7 @@ exports.order = async function (data, response) {
     /** This function creates the vendor in DB with the provided data if not already exists 
      * And returns the vendor if exists already
     */
+     
     return new Promise(function (resolve, reject) {
       var email = data.customer.billing.email, phone = data.customer.billing.phone, name = data.customer.billing.name, orderId = sku, price = data.order.total_price, outlet_name = data.order.outlet.name,
         vendor_name = data.order.outlet.vendor_name,
@@ -93,7 +94,7 @@ exports.order = async function (data, response) {
                   vendor_id: data.order.outlet.qr_code
                 }
                 orderItems.push(item);
-              };
+              }
               return db.orderItems.bulkCreate(orderItems, { transaction: t }).then(data => {
               })
             })
@@ -125,7 +126,7 @@ exports.order = async function (data, response) {
               temp_email="";
             }
            
-            if(Boolean(alias.payment_method))
+            if(alias.payment_method)
             payment_method=alias.payment_method.split(",");
             else
             payment_method=[];

@@ -45,7 +45,7 @@ return new Promise(function (resolve, reject) {
         if(new Date(user.date).toDateString()==new Date(data.date).toDateString())
         is_duplicate=true;
       });
-      if(!Boolean(is_duplicate))
+      if(!is_duplicate)
         db.user.create({
           booking_id: id,
           name:data.name,

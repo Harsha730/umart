@@ -22,7 +22,7 @@ exports.loadProduct = async function (data, response) {
       product = db.products;
   
       var is_include_shipping;
-      if(!Boolean(data.price_book_id))
+      if(!data.price_book_id)
       data.price_book_id=null;
 
       if(data.is_include_shipping=="false")
@@ -30,7 +30,7 @@ exports.loadProduct = async function (data, response) {
       else
        is_include_shipping=true;
 
-      if(!Boolean(data.tags))
+      if(!data.tags)
       data.tags="";
     /** This function creates the vendor in DB with the provided data if not already exists 
      * And returns the vendor if exists already

@@ -36,13 +36,13 @@ exports.registerVendorAlias = async function (vendor,locale,response) {
       is_payment_contact=false;
 
       var temp_privacy_mode;
-      if(!Boolean(vendor.privacy_mode)||"no"==vendor.privacy_mode)
+      if(!vendor.privacy_mode||"no"==vendor.privacy_mode)
       temp_privacy_mode="No";
       else
       temp_privacy_mode="Yes";
 
       var payment_method;
-      if(Boolean(vendor.payment_method))
+      if(vendor.payment_method)
       payment_method=vendor.payment_method.join(",");
       else
       payment_method="";

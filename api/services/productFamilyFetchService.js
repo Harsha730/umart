@@ -12,7 +12,7 @@ exports.getProductFamily= function (param,locale,response) {
 
   // Creating and returning the Promise
   var clause;
-  if(Boolean(param))
+  if(param)
   clause={vendor_id:param};
   else
   clause=undefined;

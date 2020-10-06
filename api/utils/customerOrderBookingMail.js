@@ -83,6 +83,8 @@ exports.orderBookingMail = function (email,customer_name,outlet_name,order_id,ve
   logger.info("Email type is customer order-booking Email")
   
   var tax=data.order.gstTax_price.toFixed(2),total=data.order.grand_total.toFixed(2);
+  if(0.0==tax)
+  tax="Included";
   let payment_details = (
     '<table style="margin-left: 3cm;">' +
     '<thead>' +

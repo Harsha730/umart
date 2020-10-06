@@ -2,7 +2,7 @@
 
 const db = require('../models/sequelize');
 const { error } = require('winston');
-const { state } = require('../models/sequelize');
+const { state, vendor } = require('../models/sequelize');
 
 var logger = require('../config/winston_Logger'),                             // Importing the logger service
   vendorRegisterService = require('../services/vendorRegisterService'), // Importing the registration service
@@ -33,8 +33,8 @@ exports.create_vendor = async function (req, res) {
 
       var data = JSON.parse(vendorInfo);
       var header = JSON.stringify(req.headers),
-      headerData = JSON.parse(header),
-      locale = headerData.locale;
+        headerData = JSON.parse(header),
+        locale = headerData.locale;
 
       logger.info("parsing of request body completed");
 
@@ -50,19 +50,20 @@ exports.create_vendor = async function (req, res) {
         city = data.city,
         zipcode = data.zipcode,
         languagesPreferred = data.languagesPreferred,
-        submittedDate = data.submittedDate;
+        submittedDate = data.submittedDate,
+        plan_id = data.plan_id;
 
       // Getting the Phone as string
-      if (Boolean(phone))
+      if (phone)
         phone = phone + "";
 
       // Mandatory check for vendor Registration
 
-      if (Boolean(categories) && Boolean(company_name) && Boolean(name) && Boolean(company_address) && Boolean(country) && Boolean(phone) && Boolean(email) && Boolean(languagesPreferred) && Boolean(state) && Boolean(city) && Boolean(submittedDate)) {
+      if (Boolean(categories) && Boolean(company_name) && Boolean(name) && Boolean(company_address) && Boolean(country) && Boolean(phone) && Boolean(email) && Boolean(languagesPreferred) && Boolean(state) && Boolean(city) && Boolean(submittedDate) && Boolean(plan_id)) {
 
         // Invoking the Register Servic
 
-        var vendorRegisterPromise = vendorRegisterService.registerVendor(data,locale,res);
+        var vendorRegisterPromise = vendorRegisterService.registerVendor(data, locale, res);
         vendorRegisterPromise.then(function (result) {
 
           logger.info("End of create_vendor :: ");
@@ -77,19 +78,19 @@ exports.create_vendor = async function (req, res) {
       }
       else {
         logger.error("Terminating the process as partial vendor info provided for the registration ##" + data);
-        if("te_IN"==locale)
-        res.status(400).send("అవసరమైన డేటా లేనందున మీ సమాచారాన్ని సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
+        if ("te_IN" == locale)
+          res.status(400).send("అవసరమైన డేటా లేనందున మీ సమాచారాన్ని సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
         else
-        res.status(400).send("Unable to submit your information as required data is missing. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+          res.status(400).send("Unable to submit your information as required data is missing. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
       }
     }
   }// end of try
   catch (error) {
     logger.error("Error occured ::" + error);
-    if("te_IN"==locale)
-    res.status(500).send("అంతర్గత సర్వర్ లోపం! మీ ప్రొఫైల్‌ను సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
+    if ("te_IN" == locale)
+      res.status(500).send("అంతర్గత సర్వర్ లోపం! మీ ప్రొఫైల్‌ను సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
     else
-    res.status(500).send("Internal Server Error! Unable to submit your profile. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+      res.status(500).send("Internal Server Error! Unable to submit your profile. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
   }
 };
 
@@ -106,13 +107,13 @@ exports.get_vendor = function (req, res) {
       // Getting the search parameter
 
       var SearchInfo = req.query.id,
-      header = JSON.stringify(req.headers),
+        header = JSON.stringify(req.headers),
         headerData = JSON.parse(header),
         locale = headerData.locale;
-      
-        if (Boolean(SearchInfo)) {
+
+      if (SearchInfo) {
         // Fetching the vendor based on Search param
-        var vendorFetchPromise = vendorFetchService.fetchVendor(SearchInfo,locale,res);
+        var vendorFetchPromise = vendorFetchService.fetchVendor(SearchInfo, locale, res);
         vendorFetchPromise.then(function (result) {
           logger.info("End of getVendor function")
           res.json(result);
@@ -128,7 +129,7 @@ exports.get_vendor = function (req, res) {
         res.status(400).send("Unable to fetch your profile as required data is missing. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
 
       }
-    };
+    }
   }//end of try
   catch (error) {
     logger.error("Error occured ::" + error);
@@ -146,10 +147,10 @@ exports.get_all_vendors = function (req, res) {
 
     logger.info('Entered into get_all_vendors function');
     var header = JSON.stringify(req.headers),
-    headerData = JSON.parse(header),
-    locale = headerData.locale;
+      headerData = JSON.parse(header),
+      locale = headerData.locale;
 
-    var fetchVendorsPromise = vendorFetchService.fetchAllVendors(locale,res);
+    var fetchVendorsPromise = vendorFetchService.fetchAllVendors(locale, res);
     fetchVendorsPromise.then(function (result) {
       logger.info("End of get_all_vendors function")
       res.json(result)
@@ -199,25 +200,25 @@ exports.update_vendor = function (req, res) {
         isApproved = data.isApproved,
         comments = data.comments,
         zipcode = data.zipcode,
-        price_book_id=data.price_book_id;
+        price_book_id = data.price_book_id;
       // Getting the Phone as string
-      if (Boolean(phone))
+      if (phone)
         phone = phone + "";
 
       // Setting default values to isApproved and Comments if not provided
       if (isApproved != true && isApproved != false)
         isApproved = true;
-      if (!Boolean(comments))
+      if (!comments)
         comments = "";
 
-      if(!Boolean(price_book_id))
-      price_book_id=null;
+      if (!price_book_id)
+        price_book_id = null;
 
       // Check on required Data  
       if (Boolean(qrCode) && Boolean(company_name) && Boolean(name) && Boolean(categories) && Boolean(company_address) && Boolean(country) && Boolean(state) && Boolean(city) && Boolean(languagesPreferred) && Boolean(submittedDate) && Boolean(updatedDate) && Boolean(phone) && Boolean(email) && Boolean(zipcode) && (categories.length != 0) && (languagesPreferred.length != 0)) {
 
         // Invoking the VendorUpdateService
-        var updateVendorPromise = vendorUpdateService.update_vendor(qrCode, company_name, name, email, categories, phone, company_address, country, state, city, zipcode, languagesPreferred, updatedDate, site, isApproved, comments,price_book_id,res);
+        var updateVendorPromise = vendorUpdateService.update_vendor(qrCode, company_name, name, email, categories, phone, company_address, country, state, city, zipcode, languagesPreferred, updatedDate, site, isApproved, comments, price_book_id, res);
         updateVendorPromise.then(function (result) {
           logger.info("End of update vendor function");
           res.json(result);
@@ -361,6 +362,11 @@ exports.send_mail = function (req, res) {
 
       if (Boolean(name) && Boolean(phone) && Boolean(email) && Boolean(query) && Boolean(country)) {
 
+        if(1==country)
+        country='India'
+        else
+        country='USA'
+
         mailUtil.sendMail(email, "", name, phone, query, country, false, false, "");
 
         logger.info("End of send mail");
@@ -394,6 +400,7 @@ exports.get_otp = function (req, res) {
       var Data = JSON.stringify(req.body),
         vendorData = JSON.parse(Data),
         id = vendorData.id,
+    //    qr_code = vendorData.qr_code,
         isPhone = false,
 
         // Phone validation
@@ -409,7 +416,7 @@ exports.get_otp = function (req, res) {
           logger.info("Provided email for OTP");
         }
 
-        var otpServicePromise = otpService.update_vendor(id, res, isPhone);
+        var otpServicePromise = otpService.update_vendor(id,res, isPhone);
 
         otpServicePromise.then(function (result) {
 
@@ -427,7 +434,7 @@ exports.get_otp = function (req, res) {
 
       else {
         logger.error("Unable to send OTP as mail is missing");
-        res.status(400).send("Unable to send OTP. Please provide your registered email/mobile number to get OTP. Thank you for your business.")
+        res.status(400).send("Unable to send OTP. Please provide your registered email/mobile number and qr_code to get OTP. Thank you for your business.")
       }
 
       logger.info("End of get_OTP function");
@@ -469,7 +476,7 @@ exports.verify_otp = function (req, res) {
           isPhone = true;
 
         // Fetching the vendor based on Search param
-        var vendorFetchPromise = otpService.verify_vendor(id, otp, isPhone,locale, res);
+        var vendorFetchPromise = otpService.verify_vendor(id, otp, isPhone, locale, res);
         vendorFetchPromise.then(function (vendor) {
           res.json(vendor);
         }, function (errorResponse) {
@@ -501,15 +508,15 @@ exports.fetch_products_by_vendor = function (req, res) {
       logger.info("Entered into the products fetch function");
 
       var id = req.query.id,
-      header = JSON.stringify(req.headers),
-      headerData = JSON.parse(header),
-      locale= headerData.locale;
-    
-      if (Boolean(id)) {
+        header = JSON.stringify(req.headers),
+        headerData = JSON.parse(header),
+        locale = headerData.locale;
+
+      if (id) {
 
         logger.info("Fetching the products of the vendor ::" + id);
 
-        var productFetchPromise = productFetchService.getProducts(id, "",locale,res);
+        var productFetchPromise = productFetchService.getProducts(id, "", locale, res);
         productFetchPromise.then(products => {
           logger.info("returning the success response");
           res.json(products);
@@ -539,15 +546,15 @@ exports.fetch_deleted_products_by_vendor = function (req, res) {
       logger.info("Entered into the fetch_deleted_products_by_vendor");
 
       var id = req.query.id,
-      header = JSON.stringify(req.headers),
-      headerData = JSON.parse(header),
-      locale= headerData.locale;
+        header = JSON.stringify(req.headers),
+        headerData = JSON.parse(header),
+        locale = headerData.locale;
 
-      if (Boolean(id)) {
+      if (id) {
 
         logger.info("Fetching the deleted products of the vendor ::" + id);
 
-        var productFetchPromise = productFetchService.getProducts(id, true,locale, res);
+        var productFetchPromise = productFetchService.getProducts(id, true, locale, res);
         productFetchPromise.then(products => {
           logger.info("returning the success response");
           res.json(products);
@@ -577,15 +584,15 @@ exports.fetch_outlet_by_name = function (req, res) {
       logger.info("Entered into the outlet fetch function");
 
       var short_name = req.params['short_name'],
-      header = JSON.stringify(req.headers),
-      headerData = JSON.parse(header),
-      locale= headerData.locale;
+        header = JSON.stringify(req.headers),
+        headerData = JSON.parse(header),
+        locale = headerData.locale;
 
       logger.info("Fetching the outlet using name ::" + [short_name]);
 
       if (Boolean([short_name]) && undefined != short_name) {
 
-        var outletFetchPromise = outletFetchService.getOutlet(short_name, "",locale,res);
+        var outletFetchPromise = outletFetchService.getOutlet(short_name, "", locale, res);
         outletFetchPromise.then(outlet => {
           logger.info("returning the success response");
           res.json(outlet);
@@ -619,12 +626,12 @@ exports.fetch_product_by_sku = function (req, res) {
         sku = req.query.sku,
         header = JSON.stringify(req.headers),
         headerData = JSON.parse(header),
-        locale= headerData.locale;
+        locale = headerData.locale;
 
       logger.info("Fetching the product of the vendor ::");
 
       if (Boolean(qrCode) && Boolean(sku)) {
-        var outletFetchPromise = outletFetchService.getOutlet(qrCode, sku,locale,res);
+        var outletFetchPromise = outletFetchService.getOutlet(qrCode, sku, locale, res);
         outletFetchPromise.then(outlet => {
           logger.info("returning the success response");
           res.json(outlet);
@@ -680,13 +687,13 @@ exports.fetch_outlets = function (req, res) {
   var outletsFetchService = require('../services/outletsFetchService');
   if (req.body) {
     try {
-     var header = JSON.stringify(req.headers),
-     headerData = JSON.parse(header),
-     locale= headerData.locale;
+      var header = JSON.stringify(req.headers),
+        headerData = JSON.parse(header),
+        locale = headerData.locale;
 
-    logger.info("Entered into the fetch_outlets function");
+      logger.info("Entered into the fetch_outlets function");
 
-      var outletsFetchPromise = outletsFetchService.getOutlets(locale,res);
+      var outletsFetchPromise = outletsFetchService.getOutlets(locale, res);
       outletsFetchPromise.then(outlets => {
         logger.info("returning the success response");
         res.json(outlets);
@@ -702,26 +709,29 @@ exports.fetch_outlets = function (req, res) {
   }
 }
 
-/* exports.test = function (req, res) {
-  var header = JSON.stringify(req.headers),
-    headerData = JSON.parse(header),
-    id = headerData.param;
-  if (Boolean(id)) {
-    var data = vendorFetchService.fetchAllVendorsByCase(res, id);
-    data.then(status => {
-      res.json(status);
-    })
-  }
-  else {
-    res.status(400).send("Please provide required info");
-  }
-} */
+exports.subscriptionList = function (req, res) {
+  logger.info("Entered into subscriptionList");
+  var planService = require('../services/subscriptionPlanFetchService');
+  planService.subscriptionList(req.query.country, res).then(data => {
+    res.json(data)
+  }, error => {
+    error;
+  })
+  /* var today=new Date("2020-09-29T18:23:30.943Z");
+  console.log(today);
+  var priorDate=new Date().setDate(today.getDate()+29);
+  // today.getDate.length
+  var priorDateString=new Date(priorDate);
+  // console.log(today.toLocaleString);
+  res.json("start-Date :: "+today+" "+"  end-Date :: "+" "+priorDateString+" todayDate ::"); */
+  logger.info("End of subscriptionList");
+}
 
 exports.get_geo_list = function (req, res) {
   var header = JSON.stringify(req.headers),
-  headerData = JSON.parse(header),
-  locale=headerData.locale;
-  vendorFetchService.get_geo_list(locale,res).then(status => {
+    headerData = JSON.parse(header),
+    locale = headerData.locale;
+  vendorFetchService.get_geo_list(locale, res).then(status => {
     res.json(status);
   })
 }
@@ -729,8 +739,8 @@ exports.get_geo_list = function (req, res) {
 exports.countries = function (req, res) {
   var countryFetchService = require('../services/countryFetchService');
   var header = JSON.stringify(req.headers),
-  headerData = JSON.parse(header),
-  locale=headerData.locale;
+    headerData = JSON.parse(header),
+    locale = headerData.locale;
   countryFetchService.getCountries(locale).then(data => {
     res.json(data);
   }, error => {
@@ -744,8 +754,8 @@ exports.states = function (req, res) {
     header = JSON.stringify(req.headers),
     headerData = JSON.parse(header),
     id = headerData.id,
-    locale=headerData.locale;
-  statesFetchService.getStates(id,locale, res).then(data => {
+    locale = headerData.locale;
+  statesFetchService.getStates(id, locale, res).then(data => {
     res.json(data);
   }, error => {
     logger.error("Error occured while fetching states");
@@ -759,8 +769,8 @@ exports.cities = function (req, res) {
     header = JSON.stringify(req.headers),
     headerData = JSON.parse(header),
     id = headerData.id,
-    locale=headerData.locale;
-  cityFetchService.getCities(id,locale,res).then(data => {
+    locale = headerData.locale;
+  cityFetchService.getCities(id, locale, res).then(data => {
     res.json(data);
   }, error => {
     logger.error("Error occured while fetching cities");
@@ -770,7 +780,7 @@ exports.cities = function (req, res) {
 
 exports.uploadFile = function (req, res) {
   var fileUpload = require('../utils/s3FileUpload');
-  if (Boolean(req.files.file)) {
+  if (req.files.file) {
     var uploadPromise = fileUpload.upload(req.files.file, res);
     uploadPromise.then(data => {
       logger.info("Sending the uploaded file location");
@@ -820,11 +830,11 @@ exports.add_product = async function (req, res) {
         is_active = data.is_active;
 
       // Getting the Phone as string
-      if (!Boolean(short_description))
+      if (!short_description)
         data.short_description = "";
-      if (!Boolean(long_description))
+      if (!long_description)
         data.long_description = "";
-      if (!Boolean(image_caption))
+      if (!image_caption)
         data.image_caption = "";
       // Mandatory check for product insert
 
@@ -883,9 +893,9 @@ exports.update_product = function (req, res) {
         standard_image_path = data.standard_image_path,
         image_caption = data.image_caption,
         is_active = data.is_active,
-        tags=data.tags,
-        price_book_id=data.price_book_id,
-        discount_price=data.discount_price;
+        tags = data.tags,
+        price_book_id = data.price_book_id,
+        discount_price = data.discount_price;
 
       var is_include_shipping;
 
@@ -894,17 +904,17 @@ exports.update_product = function (req, res) {
       else
         is_include_shipping = true;
 
-      if(!Boolean(tags))
-      tags="";
+      if (!tags)
+        tags = "";
 
-      if(!Boolean(discount_price))
-      discount_price=0;
+      if (!discount_price)
+        discount_price = 0;
 
       // Check on required Data
       if (Boolean(name) && Boolean(sku) && Boolean(price) && Boolean(currency_id) && Boolean(vendor_id) && Boolean(quantity) && Boolean(product_family_id) && Boolean(small_image_path) && Boolean(standard_image_path) && (is_active == true || is_active == false)) {
 
         // Invoking the VendorUpdateService
-        var updateProductPromise = productUpdateService.update_product(sku, name, short_description, long_description, price, currency_id, vendor_id, quantity, product_family_id, small_image_path, standard_image_path, image_caption, is_active, is_include_shipping,tags,price_book_id,discount_price,res);
+        var updateProductPromise = productUpdateService.update_product(sku, name, short_description, long_description, price, currency_id, vendor_id, quantity, product_family_id, small_image_path, standard_image_path, image_caption, is_active, is_include_shipping, tags, price_book_id, discount_price, res);
         updateProductPromise.then(function (result) {
           logger.info("End of update product function");
           res.json(result);
@@ -977,8 +987,8 @@ exports.currencies = function (req, res) {
     header = JSON.stringify(req.headers),
     headerData = JSON.parse(header),
     id = headerData.id,
-    locale=headerData.locale;
-  currencyFetchService.getCurrencies(locale,res).then(data => {
+    locale = headerData.locale;
+  currencyFetchService.getCurrencies(locale, res).then(data => {
     res.json(data);
   }, error => {
     logger.error("Error occured while fetching currency");
@@ -991,8 +1001,8 @@ exports.productFamily = function (req, res) {
     header = JSON.stringify(req.headers),
     headerData = JSON.parse(header),
     id = headerData.id,
-    locale=headerData.locale;
-  productFamilyFetchService.getProductFamily("",locale, res).then(data => {
+    locale = headerData.locale;
+  productFamilyFetchService.getProductFamily("", locale, res).then(data => {
     res.json(data);
   }, error => {
     logger.error("Error occured while fetching productFamilies");
@@ -1005,10 +1015,10 @@ exports.get_productFamily_by_vendor = function (req, res) {
     id = req.query.id,
     header = JSON.stringify(req.headers),
     headerData = JSON.parse(header),
-    locale= headerData.locale;
-  if (Boolean(id)) {
-    console.log("locale "+locale+" id "+id);
-    productFamilyFetchService.getProductFamily(id,locale,res).then(data => {
+    locale = headerData.locale;
+  if (id) {
+    console.log("locale " + locale + " id " + id);
+    productFamilyFetchService.getProductFamily(id, locale, res).then(data => {
       res.json(data);
     }, error => {
       logger.error("Error occured while fetching productFamilies");
@@ -1044,7 +1054,7 @@ exports.book_slot = async function (req, res) {
         vendor_id = data.vendor_id;
 
       // Getting the Phone as string
-      if (!Boolean(email))
+      if (!email)
         data.email = "";
 
       // Mandatory check for product insert
@@ -1081,12 +1091,12 @@ exports.book_slot = async function (req, res) {
 
 exports.fetchSlots = function (req, res) {
   var id = req.query.id,
-  header = JSON.stringify(req.headers),
-  headerData = JSON.parse(header),
-  locale= headerData.locale;
-  if (Boolean(id)) {
+    header = JSON.stringify(req.headers),
+    headerData = JSON.parse(header),
+    locale = headerData.locale;
+  if (id) {
     var slotFetchService = require('../services/fetchSlotTimings');
-    slotFetchService.getSlotTimings(id,locale,res).then(data => {
+    slotFetchService.getSlotTimings(id, locale, res).then(data => {
       res.json(data);
     }, error => {
       logger.error("Error occured while fetching slots");
@@ -1109,18 +1119,18 @@ exports.confirmSlot = function (req, res) {
     name = headerData.name;
 
   if (Boolean(id) && Boolean(booking_id) && Boolean(date) && Boolean(status) && Boolean(timing) && Boolean(name)) {
- //   if(status=="false"&&Boolean(headerData.comments)){
+    //   if(status=="false"&&Boolean(headerData.comments)){
     var slotConfirmService = require('../services/slotConfirmationService');
-    slotConfirmService.notifySlot(id, booking_id, status, timing, name, date, res,headerData.comments).then(data => {
+    slotConfirmService.notifySlot(id, booking_id, status, timing, name, date, res, headerData.comments).then(data => {
       res.json(data);
     }, error => {
       logger.error("Error occured while confirming slots");
       error;
     })
-//  }
-  /* else {
-    res.status(403).send("Please provide comments for the slot rejection.");
-  } */
+    //  }
+    /* else {
+      res.status(403).send("Please provide comments for the slot rejection.");
+    } */
   }
   else {
     res.status(403).send("Please provide required info to confirm the slot.");
@@ -1243,7 +1253,7 @@ exports.getBookings_by_vendor = function (req, res) {
 
       // Mandatory check for product insert
 
-      if (Boolean(id)) {
+      if (id) {
         // Invoking the product insert service
         var fetchBookingsListService = require('../services/fetchBookingsList'),
           BookingListPromise = fetchBookingsListService.getBookingList(id, "", res);
@@ -1284,7 +1294,7 @@ exports.get_approved_vendor_bookings = function (req, res) {
 
       // Mandatory check for product insert
 
-      if (Boolean(id)) {
+      if (id) {
         // Invoking the product insert service
         var fetchBookingsListService = require('../services/fetchBookingsList'),
           BookingListPromise = fetchBookingsListService.getBookingList(id, "true", res);
@@ -1324,7 +1334,7 @@ exports.get_rejected_vendor_bookings = function (req, res) {
 
       // Mandatory check for product insert
 
-      if (Boolean(id)) {
+      if (id) {
         // Invoking the product insert service
         var fetchBookingsListService = require('../services/fetchBookingsList'),
           BookingListPromise = fetchBookingsListService.getBookingList(id, "false", res);
@@ -1428,7 +1438,7 @@ exports.process_Order = function (req, res) {
   var OAuthService = require('../services/OAuthService');
   // OAuthService.login();
   var result = JSON.stringify(req.body),
-  order=JSON.parse(result);
+    order = JSON.parse(result);
   // Parsing the request body
   if (Boolean(order.customer.billing.name) &&
     Boolean(order.customer.billing.phone) &&
@@ -1453,18 +1463,18 @@ exports.process_Order = function (req, res) {
     Boolean(order.order.outlet.name) &&
     Boolean(order.order.outlet.vendor_name) &&
     Boolean(order.order.outlet.vendor_phone) &&
-    Boolean(order.order.outlet.vendor_mail)){
+    Boolean(order.order.outlet.vendor_mail)) {
     var orderService = require('../services/orderService');
-  var orderPromise = orderService.order(order, res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-else{
-  res.status(400).send("Unable to book order! as required data is missing for order booking");
-}
+    var orderPromise = orderService.order(order, res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to book order! as required data is missing for order booking");
+  }
 }
 
 exports.getOrderList = function (req, res) {
@@ -1472,18 +1482,18 @@ exports.getOrderList = function (req, res) {
   // OAuthService.login();
   var id = req.query.id;
   // Parsing the request body
-  if (Boolean(id)){
+  if (id) {
     var orderService = require('../services/fetchOrderList');
-  var orderPromise = orderService.getOrderList(id,"true",res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-else{
-  res.status(400).send("Unable to fetch orders! as required data is missing for fetching orders");
-}
+    var orderPromise = orderService.getOrderList(id, "true", res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to fetch orders! as required data is missing for fetching orders");
+  }
 }
 
 exports.getOrderDetails = function (req, res) {
@@ -1491,81 +1501,81 @@ exports.getOrderDetails = function (req, res) {
   // OAuthService.login();
   var id = req.query.id;
   // Parsing the request body
-  if (Boolean(id)){
+  if (id) {
     var orderService = require('../services/orderFetchService');
-  var orderPromise = orderService.getOrderDetails(id,"true",res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-else{
-  res.status(400).send("Unable to fetch orders! as required data is missing for fetching orders");
-}
+    var orderPromise = orderService.getOrderDetails(id, "true", res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to fetch orders! as required data is missing for fetching orders");
+  }
 }
 
 exports.remindOrderPayment = function (req, res) {
-  var data=JSON.stringify(req.body),
-  data=JSON.parse(data);
+  var data = JSON.stringify(req.body),
+    data = JSON.parse(data);
   // Parsing the request body
-  if (Boolean(data.order_id)){
+  if (data.order_id) {
     var paymentReminderService = require('../services/paymentReminderService');
-  var orderPromise = paymentReminderService.paymentReminder(data,res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-else{
-  res.status(400).send("Unable to send Payment Reminder! as required data is missing.");
-}
+    var orderPromise = paymentReminderService.paymentReminder(data, res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to send Payment Reminder! as required data is missing.");
+  }
 }
 
 exports.updateOrderPayment = function (req, res) {
-  var data=JSON.stringify(req.body),
-  data=JSON.parse(data);
+  var data = JSON.stringify(req.body),
+    data = JSON.parse(data);
   // Parsing the request body
-  if (Boolean(data.order_id)&&Boolean(data.payment_type)&&Boolean(data.payment_status)&&Boolean(data.updated_date)){
-    if(data.payment_status.name=="Rejected"&&(data.payment_notes==""||data.payment_notes==undefined)){
+  if (Boolean(data.order_id) && Boolean(data.payment_type) && Boolean(data.payment_status) && Boolean(data.updated_date)) {
+    if (data.payment_status.name == "Rejected" && (data.payment_notes == "" || data.payment_notes == undefined)) {
       res.status(400).send("Unable to update Payment status! as payment notes is required for the rejection.");
-}
-else{
-  if(data.payment_status.name=="Pending")
-  res.status(400).send("Unable to update Payment status! Please choose valid payment status.");
-  else{
-  var paymentUpdateService = require('../services/paymentUpdateService');
-  var orderPromise = paymentUpdateService.updatePaymentStatus(data,res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-}
-}
-else{
-  res.status(400).send("Unable to update Payment status! as required data is missing.");
-}
+    }
+    else {
+      if (data.payment_status.name == "Pending")
+        res.status(400).send("Unable to update Payment status! Please choose valid payment status.");
+      else {
+        var paymentUpdateService = require('../services/paymentUpdateService');
+        var orderPromise = paymentUpdateService.updatePaymentStatus(data, res);
+        orderPromise.then(result => {
+          res.json(result);
+        }, error => {
+          error;
+        })
+      }
+    }
+  }
+  else {
+    res.status(400).send("Unable to update Payment status! as required data is missing.");
+  }
 }
 
-exports.updateShipmentDetails= function (req, res) {
-  var data=JSON.stringify(req.body),
-  data=JSON.parse(data);
+exports.updateShipmentDetails = function (req, res) {
+  var data = JSON.stringify(req.body),
+    data = JSON.parse(data);
   // Parsing the request body
-  if (Boolean(data.order_id)&&Boolean(data.shipment_type)&&Boolean(data.shipment_tracking)&&Boolean(data.updated_date)){
+  if (Boolean(data.order_id) && Boolean(data.shipment_type) && Boolean(data.shipment_tracking) && Boolean(data.updated_date)) {
     var shipmentUpdateService = require('../services/orderFulfillmentService');
-  var orderPromise = shipmentUpdateService.updateShipment(data,res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-else{
-  res.status(400).send("Unable to update shipment details! as required data is missing.");
-}
+    var orderPromise = shipmentUpdateService.updateShipment(data, res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to update shipment details! as required data is missing.");
+  }
 }
 
 exports.paymentType = function (req, res) {
@@ -1599,34 +1609,34 @@ exports.orderStatus = function (req, res) {
 }
 
 exports.shipmentType = function (req, res) {
- var shipmentTypeFetchService = require('../services/shipmentTypeFetchService');
+  var shipmentTypeFetchService = require('../services/shipmentTypeFetchService');
   shipmentTypeFetchService.getShipmentType().then(data => {
     res.json(data);
   }, error => {
     logger.error("Error occured while fetching shipment type");
     error;
   })
- /*  var data=18.9;
-  var results=data.toFixed(2);
-  res.send(results); */
+  /*  var data=18.9;
+   var results=data.toFixed(2);
+   res.send(results); */
 }
 
-exports.updateOrderStatusDetails= function (req, res) {
-  var data=JSON.stringify(req.body),
-  data=JSON.parse(data);
+exports.updateOrderStatusDetails = function (req, res) {
+  var data = JSON.stringify(req.body),
+    data = JSON.parse(data);
   // Parsing the request body
-  if (Boolean(data.order_id)&&Boolean(data.notes)&&Boolean(data.updated_date)&&Boolean(data.status)){
+  if (Boolean(data.order_id) && Boolean(data.notes) && Boolean(data.updated_date) && Boolean(data.status)) {
     var orderStatusUpdateService = require('../services/orderStatusUpdateService');
-  var orderPromise = orderStatusUpdateService.updateOrderStatus(data,res);
-  orderPromise.then(result => {
-    res.json(result);
-  }, error => {
-    error;
-  })
-}
-else{
-  res.status(400).send("Unable to update order status details! as required data is missing.");
-}
+    var orderPromise = orderStatusUpdateService.updateOrderStatus(data, res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to update order status details! as required data is missing.");
+  }
 }
 
 exports.loadStates = function (req, res) {
@@ -1635,7 +1645,7 @@ exports.loadStates = function (req, res) {
     var s3BucketName = req.query['bucket-name'],
       fileName = req.query['file-name'],
       statesUtil = require('../utils/LoadStateUtil'), loadStatesintoDB = require('../utils/loadStatesintoDB');
-      statesUtil.getStatesFromExcel(s3BucketName, fileName).then(result => {
+    statesUtil.getStatesFromExcel(s3BucketName, fileName).then(result => {
       var states = result;
       loadStatesintoDB.loadStates(states).then(status => {
         logger.info("Successfully loaded the states into DB");
@@ -1661,7 +1671,7 @@ exports.loadCities = function (req, res) {
     var s3BucketName = req.query['bucket-name'],
       fileName = req.query['file-name'],
       citiesUtil = require('../utils/LoadCityUtil'), loadCitiesintoDB = require('../utils/loadCitiesintoDB');
-      citiesUtil.getCitiesFromExcel(s3BucketName, fileName).then(result => {
+    citiesUtil.getCitiesFromExcel(s3BucketName, fileName).then(result => {
       var cities = result;
       loadCitiesintoDB.loadCities(cities).then(status => {
         logger.info("Successfully loaded the cities into DB");
@@ -1696,8 +1706,8 @@ exports.add_price_book = async function (req, res) {
       logger.info("parsing of request body completed");
 
       var vendor_id = data.vendor_id,
-        gst_number=data.gst_number,
-        gst_percent=data.gst_slab_id;
+        gst_number = data.gst_number,
+        gst_percent = data.gst_slab_id;
       // Mandatory check for product insert
 
       if (Boolean(gst_number) && Boolean(vendor_id) && Boolean(gst_percent)) {
@@ -1705,7 +1715,7 @@ exports.add_price_book = async function (req, res) {
 
         var priceBookLoadService = require('../services/priceBookLoadService'),
 
-        priceBookLoadPromise = priceBookLoadService.loadPriceBook(data, res);
+          priceBookLoadPromise = priceBookLoadService.loadPriceBook(data, res);
         priceBookLoadPromise.then(function (result) {
 
           logger.info("End of add_price_book:: ");
@@ -1742,46 +1752,46 @@ exports.create_vendor_alias = async function (req, res) {
 
       var data = JSON.parse(vendorInfo);
       var header = JSON.stringify(req.headers),
-      headerData = JSON.parse(header),
-      locale = headerData.locale;
+        headerData = JSON.parse(header),
+        locale = headerData.locale;
 
       logger.info("parsing of request body completed");
 
       // Getting the Vendor Info
-       //company_name = data.company_name,
-       var name = data.name,
+      //company_name = data.company_name,
+      var name = data.name,
         email = data.email,
-     //    categories = data.categories,
+        //    categories = data.categories,
         phone = data.phone,
-    //    company_address = data.company_address,
-    //    country = data.country,
-    //    state = data.state,
-    //    city = data.city,
-    //    zipcode = data.zipcode,
-     //   languagesPreferred = data.languagesPreferred,
+        //    company_address = data.company_address,
+        //    country = data.country,
+        //    state = data.state,
+        //    city = data.city,
+        //    zipcode = data.zipcode,
+        //   languagesPreferred = data.languagesPreferred,
         submittedDate = data.submittedDate,
-        vendor_id=data.vendor_id,
-        created_by=data.created_by,
-        privacy_mode=data.privacy_mode;
+        vendor_id = data.vendor_id,
+        created_by = data.created_by,
+        privacy_mode = data.privacy_mode;
       // Getting the Phone as string
-      if (Boolean(phone))
+      if (phone)
         phone = phone + "";
 
       // Mandatory check for vendor Registration
-      if(data.is_payment_contact=="true"&&!Boolean(data.payment_method)){
+      if (data.is_payment_contact == "true" && !data.payment_method) {
         logger.error("Terminating the process as partial vendor alias info provided for the registration ##" + data);
-        if("te_IN"==locale)
-        res.status(400).send("అవసరమైన డేటా లేనందున మీ సమాచారాన్ని సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
+        if ("te_IN" == locale)
+          res.status(400).send("అవసరమైన డేటా లేనందున మీ సమాచారాన్ని సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
         else
-        res.status(400).send("Unable to submit your information as payment_method is missing for payment contact.")
+          res.status(400).send("Unable to submit your information as payment_method is missing for payment contact.")
       }
 
-     else if (Boolean(name) && Boolean(phone) && Boolean(email) && Boolean(submittedDate)&&Boolean(vendor_id)&&Boolean(created_by)&&("no"==privacy_mode||"yes"==privacy_mode)) {
+      else if (Boolean(name) && Boolean(phone) && Boolean(email) && Boolean(submittedDate) && Boolean(vendor_id) && Boolean(created_by) && ("no" == privacy_mode || "yes" == privacy_mode)) {
 
         // Invoking the Register Servic
 
-        var vendorAliasRegisterService=require('../services/vendorAliasRegisterService');
-        var vendorAliasRegisterPromise = vendorAliasRegisterService.registerVendorAlias(data,locale,res);
+        var vendorAliasRegisterService = require('../services/vendorAliasRegisterService');
+        var vendorAliasRegisterPromise = vendorAliasRegisterService.registerVendorAlias(data, locale, res);
         vendorAliasRegisterPromise.then(function (result) {
 
           logger.info("End of create_vendor_alias :: ");
@@ -1796,19 +1806,19 @@ exports.create_vendor_alias = async function (req, res) {
       }
       else {
         logger.error("Terminating the process as partial vendor alias info provided for the registration ##" + data);
-        if("te_IN"==locale)
-        res.status(400).send("అవసరమైన డేటా లేనందున మీ సమాచారాన్ని సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
+        if ("te_IN" == locale)
+          res.status(400).send("అవసరమైన డేటా లేనందున మీ సమాచారాన్ని సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
         else
-        res.status(400).send("Unable to submit your information as required data is missing. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+          res.status(400).send("Unable to submit your information as required data is missing. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
       }
     }
   }// end of try
   catch (error) {
     logger.error("Error occured ::" + error);
-    if("te_IN"==locale)
-    res.status(500).send("అంతర్గత సర్వర్ లోపం! మీ ప్రొఫైల్‌ను సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
+    if ("te_IN" == locale)
+      res.status(500).send("అంతర్గత సర్వర్ లోపం! మీ ప్రొఫైల్‌ను సమర్పించడం సాధ్యం కాలేదు. మా ఏజెంట్ ఒకరు త్వరలో మిమ్మల్ని చేరుకుంటారు. శీఘ్ర ప్రతిస్పందన కోసం, దయచేసి మా మద్దతు బృందాన్ని సంప్రదింపు పేజీ  ద్వారా చేరుకోండి. మీ వ్యాపారానికి ధన్యవాదాలు.")
     else
-    res.status(500).send("Internal Server Error! Unable to submit alias profile. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+      res.status(500).send("Internal Server Error! Unable to submit alias profile. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
   }
 };
 
@@ -1828,42 +1838,42 @@ exports.update_vendor_alias = function (req, res) {
 
       // Getting the Vendor Info
       var qrCode = data.qrCode,
-      //  company_name = data.company_name,
+        //  company_name = data.company_name,
         name = data.name,
         email = data.email,
-      //  categories = data.categories,
+        //  categories = data.categories,
         phone = data.phone,
-      //  company_address = data.company_address,
-      //  country = data.country,
-      //  state = data.state,
-      //  city = data.city,
-      //  languagesPreferred = data.languagesPreferred,
-      //  submittedDate = data.submittedDate,
+        //  company_address = data.company_address,
+        //  country = data.country,
+        //  state = data.state,
+        //  city = data.city,
+        //  languagesPreferred = data.languagesPreferred,
+        //  submittedDate = data.submittedDate,
         updatedDate = data.updatedDate,
-      //  site = data.site,
+        //  site = data.site,
         isApproved = data.isApproved,
         comments = data.comments,
-        updated_by=data.updated_by,
-        privacy_mode=data.privacy_mode;
+        updated_by = data.updated_by,
+        privacy_mode = data.privacy_mode;
       //  zipcode = data.zipcode,
       //  price_book_id=data.price_book_id;
       // Getting the Phone as string
-      if (Boolean(phone))
+      if (phone)
         phone = phone + "";
 
       // Setting default values to isApproved and Comments if not provided
       if (isApproved != true && isApproved != false)
         isApproved = true;
-      if (!Boolean(comments))
+      if (!comments)
         comments = "";
 
       // Check on required Data  
-      if (Boolean(qrCode) && Boolean(name) && Boolean(updatedDate) && Boolean(phone) && Boolean(email)&& Boolean(updated_by)&& ("no"==privacy_mode||"yes"==privacy_mode)) {
+      if (Boolean(qrCode) && Boolean(name) && Boolean(updatedDate) && Boolean(phone) && Boolean(email) && Boolean(updated_by) && ("no" == privacy_mode || "yes" == privacy_mode)) {
 
-        var vendorAliasUpdateService=require('../services/vendorAliasUpdateService');
-        
+        var vendorAliasUpdateService = require('../services/vendorAliasUpdateService');
+
         // Invoking the VendorUpdateService
-        var updateVendorPromise = vendorAliasUpdateService.update_vendor_alias(qrCode,name, email,phone,updatedDate,isApproved,comments,data.is_admin,data.is_outlet_display,data.is_payment_contact,updated_by,privacy_mode,res);
+        var updateVendorPromise = vendorAliasUpdateService.update_vendor_alias(qrCode, name, email, phone, updatedDate, isApproved, comments, data.is_admin, data.is_outlet_display, data.is_payment_contact, updated_by, privacy_mode, res);
         updateVendorPromise.then(function (result) {
           logger.info("End of update vendor function");
           res.json(result);
@@ -1899,6 +1909,7 @@ exports.send_vendor_alias_code = function (req, res) {
       var Data = JSON.stringify(req.body),
         vendorData = JSON.parse(Data),
         id = vendorData.id,
+        //        qr_code=vendorData.qr_code,
         isPhone = false,
 
         // Phone validation
@@ -1914,9 +1925,9 @@ exports.send_vendor_alias_code = function (req, res) {
           logger.info("Provided email for OTP");
         }
 
-        var aliasVerifyService=require('../services/vendorAliasVerifyService'),
+        var aliasVerifyService = require('../services/vendorAliasVerifyService'),
 
-        otpServicePromise = aliasVerifyService.vendor_alias_verify(id, res, isPhone);
+          otpServicePromise = aliasVerifyService.vendor_alias_verify(id, res, isPhone);
 
         otpServicePromise.then(function (result) {
 
@@ -1975,9 +1986,9 @@ exports.verify_vendor_alias = function (req, res) {
         if (id.match(phonePattern))
           isPhone = true;
 
-          var vendorAliasVerify=require('../services/vendorAliasVerifyService'),
-        // Fetching the vendor based on Search param
-         vendorFetchPromise = vendorAliasVerify.verify_vendor_alias(id, otp, isPhone,locale, res);
+        var vendorAliasVerify = require('../services/vendorAliasVerifyService'),
+          // Fetching the vendor based on Search param
+          vendorFetchPromise = vendorAliasVerify.verify_vendor_alias(id, otp, isPhone, locale, res);
         vendorFetchPromise.then(function (vendor) {
           res.json(vendor);
         }, function (errorResponse) {
@@ -2001,45 +2012,298 @@ exports.verify_vendor_alias = function (req, res) {
 
 exports.fetch_price_book_by_vendor = function (req, res) {
 
-   var vendor_id= req.query.id;
+  var vendor_id = req.query.id;
   // Parsing the request body
-  if (Boolean(vendor_id)){
+  if (vendor_id) {
     var orderStatusUpdateService = require('../services/priceBookFetchService');
-  var orderPromise = orderStatusUpdateService.getPriceBook(vendor_id,res);
+    var orderPromise = orderStatusUpdateService.getPriceBook(vendor_id, res);
+    orderPromise.then(result => {
+      res.json(result);
+    }, error => {
+      error;
+    })
+  }
+  else {
+    res.status(400).send("Unable to fetch price_book! as required data is missing.");
+  }
+}
+
+exports.fetch_gst_slabs = function (req, res) {
+
+  // Parsing the request body
+  var gstSlabFetchService = require('../services/gstSlabFetchService');
+  var orderPromise = gstSlabFetchService.getSlabs(res);
+  orderPromise.then(result => {
+    res.json(result);
+  }, error => {
+    error;
+  })
+
+}
+
+exports.fetch_alias_list_by_vendor = function (req, res) {
+
+  var id = req.query.id;
+  // Parsing the request body
+  var aliasFetchService = require('../services/fetchAliasListService');
+  var orderPromise = aliasFetchService.getAliasList(id, res);
   orderPromise.then(result => {
     res.json(result);
   }, error => {
     error;
   })
 }
-else{
-  res.status(400).send("Unable to fetch price_book! as required data is missing.");
+
+exports.plans = function (req, res) {
+  var planService = require('../services/plansFetchService');
+  planService.getPlans(req.query.country, res).then(data => {
+    res.json(data)
+  }, error => {
+    error;
+  })
 }
+
+exports.update_plan_status = function (req, res) {
+
+  try {
+
+    //importing the required dependencies
+
+    if (req.body) {
+
+      logger.info("Entered into update_plan_status function");
+
+      var Data = JSON.stringify(req.body),
+        planData = JSON.parse(Data),
+        id = planData.id,
+        qr_code = planData.qr_code,
+        status = planData.status,
+        name = planData.vendor_name,
+        email = planData.vendor_email,
+        phone = planData.vendor_phone;
+
+      if (Boolean(id) && Boolean(qr_code) && Boolean(name) && Boolean(email) && Boolean(phone) && (status!=true || status!=false)) {
+        
+          var vendorPlanModificationService = require('../services/vendorPlanModificationService'),
+          planModifyService = vendorPlanModificationService.planUpdateService(planData, res);
+
+        planModifyService.then(function (result) {
+          res.json(result);
+        }, function (errorResponse) {
+          logger.error("Error occured while changing plan modification status ::");
+          // returning the error response
+          errorResponse;
+        });
+  
+      }
+      else {
+        logger.error("Unable to change vendor plan status as required data is missing");
+        res.status(400).send("Unable to change plan status. Please provide required data. Thank you for your business.")
+      }
+      logger.info("End of plan update status function");
+    }
+  }//end of try
+  catch (error) {
+    logger.error("Error occured ::" + error);
+    res.status(500).send("Internal Server Error! Unable to update vendor plan status. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+  }
+}
+
+exports.vendor_plan_payment_reminder = function (req, res) {
+
+  try {
+
+    //importing the required dependencies
+
+    if (req.body) {
+
+      logger.info("Entered into vendor_plan_payment_reminder function");
+
+      var Data = JSON.stringify(req.body),
+        planData = JSON.parse(Data),
+        id = planData.id,
+        qr_code = planData.qr_code,
+      //  status = planData.status,
+        name = planData.vendor_name,
+        email = planData.vendor_email,
+        phone = planData.vendor_phone;
+
+      if (Boolean(id) && Boolean(qr_code) && Boolean(name) && Boolean(email) && Boolean(phone)) {
+
+        var vendorPlanPaymentReminderService = require('../services/vendorPlanPaymentReminderService'),
+        vendorPlanPaymentReminderPromise= vendorPlanPaymentReminderService.vendorPlanPaymentReminder(planData, res);
+
+        vendorPlanPaymentReminderPromise.then(function (result) {
+          res.json(result);
+        }, function (errorResponse) {
+          logger.error("Error occured while sending vendor-plan payment reminder status ::");
+          // returning the error response
+          errorResponse;
+        });
+      }
+      else {
+        logger.error("Unable to send vendor plan payment reminder mail as required data is missing");
+        res.status(400).send("Unable to send vendor plan payment reminder. Please provide required data. Thank you for your business.")
+      }
+      logger.info("End of vendor-plan payment reminder function");
+    }
+  }//end of try
+  catch (error) {
+    logger.error("Error occured ::" + error);
+    res.status(500).send("Internal Server Error! Unable to send vendor plan payment reminder. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+  }
+}
+
+exports.vendor_plan_payment_confirmation = function (req, res) {
+
+  try {
+
+    //importing the required dependencies
+
+    if (req.body) {
+
+      logger.info("Entered into vendor_plan_payment_confirmation function");
+
+      var Data = JSON.stringify(req.body),
+        planData = JSON.parse(Data),
+        id = planData.id,
+        qr_code = planData.qr_code,
+      //  status = planData.status,
+        name = planData.vendor_name,
+        email = planData.vendor_email,
+        phone = planData.vendor_phone;
+
+      if (Boolean(id) && Boolean(qr_code) && Boolean(name) && Boolean(email) && Boolean(phone)) {
+
+        var vendorPlanPaymentService = require('../services/vendorPlanPaymentService'),
+        vendorPlanPaymentPromise= vendorPlanPaymentService.vendorPlanPaymentService(planData, res);
+        vendorPlanPaymentPromise.then(function (result) {
+          res.json(result);
+        }, function (errorResponse) {
+          logger.error("Error occured while sending vendor-plan payment confirmation status ::");
+          // returning the error response
+          errorResponse;
+        });
+      }
+      else {
+        logger.error("Unable to send vendor plan payment confirmation mail as required data is missing");
+        res.status(400).send("Unable to send payment confirmation. Please provide required data. Thank you for your business.")
+      }
+      logger.info("End of vendor-plan payment confirmation function");
+    }
+  }//end of try
+  catch (error) {
+    logger.error("Error occured ::" + error);
+    res.status(500).send("Internal Server Error! Unable to send vendor plan payment confirmation. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+  }
+}
+
+exports.get_admin_otp = function (req, res) {
+
+  try {
+
+    if (req.body) {
+
+      logger.info("Entered into get_admin_otp function");
+
+      var Data = JSON.stringify(req.body),
+        vendorData = JSON.parse(Data),
+        id = vendorData.id,
+  //      qr_code = vendorData.qr_code,
+        isPhone = false,
+
+        // Phone validation
+        phonePattern = /^\d{10}$/;
+
+      if (Boolean(id)) {
+        if (id.match(phonePattern)) {
+          isPhone = true;
+          logger.info("Provided mobile number for OTP");
+        }
+        else {
+          isPhone = false;
+          logger.info("Provided email for OTP");
+        }
+
+        var otpService=require('../services/adminOTPService'),
+        otpServicePromise = otpService.get_otp(id,res, isPhone);
+        otpServicePromise.then(function (result) {
+
+          res.json(result);
+
+        }, function (errorResponse) {
+
+          logger.error("Error occured while sending OTP ::");
+
+          // returning the error response
+          errorResponse;
+
+        });
+      }
+
+      else {
+        logger.error("Unable to send OTP as mail is missing");
+        res.status(400).send("Unable to send OTP. Please provide your registered email/mobile number and qr_code to get OTP. Thank you for your business.")
+      }
+
+      logger.info("End of get_OTP function");
+
+    }
+
+  }//end of try
+  catch (error) {
+    logger.error("Error occured ::" + error);
+    res.status(500).send("Internal Server Error! Unable to send OTP. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
   }
 
-  exports.fetch_gst_slabs = function (req, res) {
+}
 
-   // Parsing the request body
-     var gstSlabFetchService = require('../services/gstSlabFetchService');
-   var orderPromise = gstSlabFetchService.getSlabs(res);
-   orderPromise.then(result => {
-     res.json(result);
-   }, error => {
-     error;
-   })
+exports.verify_admin_otp = function (req, res) {
 
-   }
+  try {
 
-   exports.fetch_alias_list_by_vendor = function (req, res) {
+    if (req.body) {
 
-    var id=req.query.id;
-    // Parsing the request body
-    var aliasFetchService = require('../services/fetchAliasListService');
-    var orderPromise = aliasFetchService.getAliasList(id,res);
-    orderPromise.then(result => {
-      res.json(result);
-    }, error => {
-      error;
-    })
- 
+      logger.info("Entered into verify_admin_otp function");
+
+      var Data = JSON.stringify(req.body),
+
+        vendorData = JSON.parse(Data),
+        header = JSON.stringify(req.headers),
+    //    headerData = JSON.parse(header),
+    //    locale = headerData.locale,
+        id = vendorData.id,
+        otp = vendorData.otp,
+        //    isVendor= vendorData.isVendor,
+        isPhone = false,
+        // Phone validation
+        phonePattern = /^\d{10}$/;
+
+      if (Boolean(id) && Boolean(otp)) {
+
+        if (id.match(phonePattern))
+          isPhone = true;
+
+        // Fetching the vendor based on Search param
+        var otpVerifyService=require('../services/adminOTPService'),
+        adminFetchPromise = otpVerifyService.verify_admin(id, otp, isPhone, "", res);
+        adminFetchPromise.then(function (vendor) {
+          res.json(vendor);
+        }, function (errorResponse) {
+          logger.error("Error occured while verifying the admin OTP");
+          // returning error response
+          errorResponse;
+        })
+      }
+      else {
+        logger.error("Terminating the process as required data not provided to verify the vendor")
+        res.status(400).send("Please provide OTP and registered email to verify. For quick response, please reach our support team at Contact Us. Thank you for your business.");
+      }
+
     }
+  }//end of try
+  catch (error) {
+    logger.error("Error occured ::" + error);
+    res.status(500).send("Internal Server Error! Unable to verify your OTP. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business.")
+  }
+}

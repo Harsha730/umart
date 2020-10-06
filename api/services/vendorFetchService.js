@@ -7,7 +7,6 @@ const db = require("../models/sequelize"),
 
 logger = logger(module) //Passing the module to the logger
 
-
 /* This service contains the logic, to fetch the specified vendor from 
  the DB by using either phone or email or qrCode of the vendor*/
 
@@ -62,7 +61,7 @@ exports.fetchVendor = function (searchParam,locale, response) {
           ]
         },
 
-            include:[{
+            /* include:[{
               model:state
             },{
               model:country
@@ -127,17 +126,90 @@ exports.fetchVendor = function (searchParam,locale, response) {
                 token: vendor_data.token,
                 secret_key: vendor_data.secret_key,
                 timestamp: vendor_data.timestamp, */
-                short_name: vendor_data.short_name,
+            //    short_name: vendor_data.short_name,
                /*  description: vendor_data.description,
-                story: vendor_data.story, */
+                story: vendor_data.story, 
                 state: state_name,
                 country: country_name,
                 city: city_name,
                 price_book_id:vendor.price_book
               }
-          ) 
-          resolve(vendor_data);
+          )  */
+          include: [
+            {
+              model: db.state
+            }, {
+              model: db.country
+            },
+            {
+              model: db.city
+            },
+            {
+              model:db.priceBook,
+              include:[
+                {
+                  model:db.gst_slabs
+                }
+              ]
+            },
+            {
+              model:db.vendor_plan,
+              include:[{
+                model:db.plan
+              }]
+            }
+          ]
         }
+        ).then(vendor => {
+          var phone;
+        //  console.log("in Vendor");
+       //   console.log(vendor)
+          if(null!=vendor){
+            if(null!=vendor.vendor_plan&&""==vendor.vendor_plan.payment_updated_date)
+            vendor.vendor_plan.payment_updated_date="trail-period";
+          phone = "+" + vendor.phone;
+          if (vendor.short_name == null)
+            vendor.short_name = undefined;
+          vendor.city.country_id = undefined;
+          if (vendor.logo == null)
+            vendor.logo = "";
+          if (vendor.show_logo == null)
+            vendor.show_logo = false;
+          vendor = Object.assign(
+            {},
+            {
+              qrCode: vendor.qr_code,
+              company_name: vendor.company_name,
+              short_name: vendor.short_name,
+              name: vendor.name,
+              email: vendor.email,
+              categories: vendor.category.split(","),
+              phone: vendor.phone,
+              company_address: vendor.company_address,
+              country: vendor.country,
+              state: vendor.state,
+              city: vendor.city,
+              zipcode: vendor.zip_code,
+              languagesPreferred: vendor.language.split(","),
+              submittedDate: vendor.submitted_date,
+              updatedDate: vendor.updated_date,
+              site: vendor.site,
+              isApproved: vendor.is_approved,
+              timestamp: vendor.timestamp,
+              secret_key: vendor.secret_key,
+              logo: vendor.logo,
+              show_logo: vendor.show_logo,
+              price_book:vendor.price_book,
+              role:"super-admin",
+              plan:vendor.vendor_plan
+            },
+          )
+          resolve(vendor);
+        }
+        else{
+            logger.error("vendor not found in the DB with the info ::" + id);
+            reject(response.status(404).send("Unable to fetch your profile as no profile matching with the provided data. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business."));
+          }
       }).catch(error => {
         console.log(error);
         logger.error("Error occured while fetching the vendor ::" + id);
@@ -208,8 +280,167 @@ exports.fetchAllVendors = function (locale,response) {
           logger.info("End of fetchVendors function");
       }
       else{
+
+        db.vendor.findAll({
+    //      where: clause,
+          include: [
+            {
+              model: db.state
+            }, {
+              model: db.country
+            },
+            {
+              model: db.city
+            },
+            {
+              model:db.priceBook,
+              include:[
+                {
+                  model:db.gst_slabs
+                }
+              ]
+            },
+            {
+              model:db.vendor_plan,
+              include:[{
+                model:db.plan
+              }]
+            }
+          ]
+        }
+        ).then(vendors => {
+          var resObj=vendors.map(vendor=>{
+          var phone,currentDate=new Date(),dateDiff=0,is_active=true,payment_updated_date="";
+          if(null!=vendor.vendor_plan){
+            if(""==vendor.vendor_plan.payment_updated_date)
+            vendor.vendor_plan.payment_updated_date="trail-period";
+            var end_date=new Date(vendor.vendor_plan.end_date);
+            dateDiff=currentDate.getTime()-end_date.getTime(),
+            is_active=vendor.vendor_plan.is_active;
+            payment_updated_date=vendor.vendor_plan.payment_updated_date;
+          }
+          if(null==vendor.vendor_plan||(true==is_active&&0>=dateDiff)){
+            if(null!=vendor){
+              phone = "+" + vendor.phone;
+              if (vendor.short_name == null)
+                vendor.short_name = undefined;
+              if(vendor.city!=null)
+              vendor.city.country_id = undefined;
+              if (vendor.logo == null)
+                vendor.logo = "";
+              if (vendor.show_logo == null)
+                vendor.show_logo = false;
+              return Object.assign(
+                {},
+                {
+                  qrCode: vendor.qr_code,
+                  company_name: vendor.company_name,
+                  short_name: vendor.short_name,
+                  name: vendor.name,
+                  email: vendor.email,
+                  categories: vendor.category.split(","),
+                  phone: vendor.phone,
+                  company_address: vendor.company_address,
+                  country: vendor.country,
+                  state: vendor.state,
+                  city: vendor.city,
+                  zipcode: vendor.zip_code,
+                  languagesPreferred: vendor.language.split(","),
+                  submittedDate: vendor.submitted_date,
+                  updatedDate: vendor.updated_date,
+                  site: vendor.site,
+                  isApproved: vendor.is_approved,
+                  timestamp: vendor.timestamp,
+                  secret_key: vendor.secret_key,
+                  logo: vendor.logo,
+                  show_logo: vendor.show_logo,
+                  price_book:vendor.price_book,
+                  role:"super-admin",
+                  plan:vendor.vendor_plan
+                },
+              )
+              }
+          }
+          else{
+       //     return new Promise(function (resolve, reject) {
+           if(vendor.vendor_plan.payment_updated_date=="trail-period"&&0<dateDiff&&true==vendor.vendor_plan.is_active)
+           payment_updated_date="trail-period-end";
+           
+           var payment_status;
+           if(true==vendor.vendor_plan.is_active&&0<dateDiff)
+           payment_status='Pending';
+           else
+           payment_status=vendor.vendor_plan.payment_status;
+
+            vendor.vendor_plan.update({is_active:false,payment_status:payment_status,payment_updated_date:payment_updated_date});
+              vendor.vendor_plan.is_active=false;
+                phone = "+" + vendor.phone;
+                if (vendor.short_name == null)
+                  vendor.short_name = undefined;
+                if(vendor.city!=null)
+                vendor.city.country_id = undefined;
+                if (vendor.logo == null)
+                  vendor.logo = "";
+                if (vendor.show_logo == null)
+                  vendor.show_logo = false;
+                return Object.assign(
+                  {},
+                  {
+                    qrCode: vendor.qr_code,
+                    company_name: vendor.company_name,
+                    short_name: vendor.short_name,
+                    name: vendor.name,
+                    email: vendor.email,
+                    categories: vendor.category.split(","),
+                    phone: vendor.phone,
+                    company_address: vendor.company_address,
+                    country: vendor.country,
+                    state: vendor.state,
+                    city: vendor.city,
+                    zipcode: vendor.zip_code,
+                    languagesPreferred: vendor.language.split(","),
+                    submittedDate: vendor.submitted_date,
+                    updatedDate: vendor.updated_date,
+                    site: vendor.site,
+                    isApproved: vendor.is_approved,
+                    timestamp: vendor.timestamp,
+                    secret_key: vendor.secret_key,
+                    logo: vendor.logo,
+                    show_logo: vendor.show_logo,
+                    price_book:vendor.price_book,
+                    role:"super-admin",
+                    plan:vendor.vendor_plan
+                  },
+                )
+        //     return data.fulfillmentValue;
+
+           /*    console.log(JSON.parse(JSON.stringify(data)))
+              resolve(data.fulfillmentValue)
+          }).catch(error=>{
+            console.log(error)
+          }) */
+          //  console.log(result_date);
+       //   })
+          }
+        //  console.log("in Vendor");
+       //   console.log(vendor)
+      });
+      logger.info("found vendors");
+      var data={
+        vendors:resObj
+      };
+      resolve(data);
+  }).catch(error => {
+    logger.error("Error occured while fetching vendors " + error);
+    var data={
+      vendors:[]
+    };
+    resolve(data);
+  //}) */
+    })
+
      // This function fetches all the existing vendor profiles from the DB
-     db.vendor.findAll({
+  /*    db.vendor.findAll({
       // Vendor columns needs to be fetched from DB while performing SELECT Query!
       attributes: [['qr_code', 'qrCode'], 'company_name','short_name' ,'name', 'email', ['category', 'categories'], 'phone', 'company_address', 'country', 'state', 'city',['zip_code','zipcode '], ['language', 'languagesPreferred'], ['submitted_date', 'submittedDate'], ['updated_date', 'updatedDate'], 'site', ['is_approved', 'isApproved'], 'comments'],
     }).then(vendors => {
@@ -245,7 +476,7 @@ exports.fetchAllVendors = function (locale,response) {
     }).catch(error => {
       logger.error("Error occured while fetching vendors " + error);
       reject(response.status(500).send("Internal Server Error! Unable to fetch your profiles. Thank you for your business."));
-    })
+    }) */
     logger.info("End of fetchVendors function");
       }
     }

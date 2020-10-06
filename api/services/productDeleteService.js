@@ -93,7 +93,7 @@ exports.hard_vendor_delete = function (id, userInfo, response) {
             else {
 
                // Check on file Data
-               if (Boolean(data)) {
+               if (data) {
 
                   var userData = JSON.parse(data);
 

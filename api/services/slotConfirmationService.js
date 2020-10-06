@@ -51,19 +51,19 @@ exports.notifySlot= function (id,booking_id,status,timing,name,date,response,com
             user.update({user_status: status}).then(result=>{
              //   phoneUtil.sendSlotConfirmation(user.booking_id,name,timing,user.phone,status,date);
                 resolve('Slot has been approved successfully!');
-                if(Boolean(user.email)){
+                if(user.email){
                 var slotConfirmationEmail=require('../utils/slotConfirmationEmail');
                 slotConfirmationEmail.slotConfirmationEmail(user.email,user.name,user.attendies_count,user.vendor,booking_id,date,timing);
                 }
               })
             }
             if(status=="false"){
-              if(!Boolean(comments))
+              if(!comments)
               comments="The selected time slot has no availability during peak times. Slots are confirmed based on first in first serve basis.";
               user.update({user_status: status,comments:comments}).then(result=>{
             // phoneUtil.sendSlotConfirmation(user.booking_id,name,timing,user.phone,status,date);
               resolve('Slot has been rejected successfully!');
-              if(Boolean(user.email)){
+              if(user.email){
                 var slotRejectionEmail=require('../utils/slotRejectionEmail');
                 slotRejectionEmail.slotRejectionEmail(user.email,user.name,comments,user.vendor,booking_id,date,timing);
               }

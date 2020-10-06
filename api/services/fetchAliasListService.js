@@ -39,7 +39,7 @@ exports.getAliasList = function (id,res) {
                 {
                 aliases: vendor.vendor_aliases.map(vendor_alias => {
 
-                  if(Boolean(vendor_alias.payment_method))
+                  if(vendor_alias.payment_method)
                   vendor_alias.payment_method=vendor_alias.payment_method.split(",");
                   else
                   vendor_alias.payment_method=[];

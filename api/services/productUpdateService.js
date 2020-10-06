@@ -21,12 +21,12 @@ exports.update_product= function (sku,name,short_description,long_description,pr
 
         var isDuplicate=false;
 
-        if(Boolean(tags))
+        if(tags)
         tags=tags.join(",");
         else
         tags="";
 
-        if(!Boolean(price_book_id))
+        if(!price_book_id)
         price_book_id=null;
 
         logger.info('Entered into the update_product service');

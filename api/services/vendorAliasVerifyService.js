@@ -253,7 +253,7 @@ exports.verify_vendor_alias = function (id, otp, isPhone, locale, response) {
               logger.info("Found the vendor-alias outlet ::" + id);
               if(isPhone){
                 vendor.update({is_phone_verified:true}).then(tempStatus=>{
-                  if(Boolean(vendor.payment_method))
+                  if(vendor.payment_method)
                   vendor.payment_method=vendor.payment_method.split(",");
                   else
                   vendor.payment_method=[];

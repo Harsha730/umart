@@ -59,6 +59,12 @@ db.translated_slot_timings=require('./translatedSlotTimings.model.js')(sequelize
 db.translated_reviews=require('./translatedReviews.model.js')(sequelize,Sequelize);
 db.translated_price_book=require('./translatedPriceBook.model')(sequelize,Sequelize);
 db.gst_slabs=require('./gstSlabs.model')(sequelize,Sequelize);
+db.plan=require('./plans.model')(sequelize,Sequelize);
+db.plan_price=require('./plansPrice.model')(sequelize,Sequelize);
+db.features=require('./features.model')(sequelize,Sequelize);
+db.plan_features=require('./planFeatures.model')(sequelize,Sequelize);
+db.vendor_plan=require('./vendorPlan.model')(sequelize,Sequelize);
+db.admin=require('./admin.model')(sequelize,Sequelize);
 
 // Configuring the table Associations
 db.products.belongsTo(db.vendor, { foreignKey: 'vendor_id' });
@@ -204,5 +210,17 @@ db.priceBook.hasOne(db.products, {foreignKey: 'price_book_id'});
 
 db.priceBook.belongsTo(db.gst_slabs, {foreignKey: 'gst_slab_id'});
 db.gst_slabs.hasOne(db.priceBook, {foreignKey: 'gst_slab_id'});
+
+//db.plan.belongsTo(db.plan_price, {foreignKey: 'price_id'});
+//db.plan_price.hasOne(db.plan, {foreignKey: 'price_id'});
+
+db.plan.belongsToMany(db.features,{through: db.plan_features, foreignKey: 'plan_id', otherKey: 'feature_id'});
+db.features.belongsToMany(db.plan,{through: db.plan_features, foreignKey: 'feature_id', otherKey: 'plan_id'});
+
+db.vendor_plan.belongsTo(db.vendor, {foreignKey: 'vendor_id'});
+db.vendor.hasOne(db.vendor_plan, {foreignKey: 'vendor_id'});
+
+db.vendor_plan.belongsTo(db.plan, {foreignKey: 'plan_id'});
+db.plan.hasOne(db.vendor_plan, {foreignKey: 'plan_id'});
 
 module.exports = db;

@@ -43,7 +43,7 @@ exports.paymentUpdateMail = function (email,customer_name,outlet_name,order_id,v
   if("Paid"==payment_status){
   // Logic to send Registration confirmation mail to the vendor
   logger.info("Email type is customer payment Paid")
-  if(Boolean(payment_note))
+  if(payment_note)
   payment_note="Note : "+payment_note;
   else
   payment_note=undefined;

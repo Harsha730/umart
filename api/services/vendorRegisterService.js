@@ -6,6 +6,7 @@ const db = require("../models/sequelize"),
 var vendorUtils = require('../utils/vendorUtil'),
   mailUtil = require('../utils/mailUtil'),  //importing the mail util
   logger = require('../config/winston_Logger');
+const { data } = require("../config/db.config");
 
 logger = logger(module) // Passing the module to the logger
 
@@ -87,13 +88,44 @@ exports.registerVendor = async function (vendor,locale,response) {
           }
         }).then(status=>{
           if (status[1]) {
-            // Sending the confirmation mail to the vendor
-            logger.info("vendor inserted/created successfully");
+            var today=new Date(vendor.submittedDate),
+            priorDate=new Date(vendor.submittedDate).setDate(today.getDate()+29),
+            end_date=new Date(priorDate);
+            end_date=end_date.toJSON().toString();
+           // end_date=end_date.to
+          //  console.log(end_date);
+         // console.log()
+            db.vendor_plan.create({
+              vendor_id: vendor_qrCode,
+              plan_id:vendor.plan_id,
+              start_date:vendor.submittedDate,
+              end_date:end_date,
+              is_active:false,
+              payment_status:"Pending",
+              payment_date:"",
+              updated_date:"",
+              updated_person:"",
+              payment_updated_date:"trail-period",
+              in_trail_period:true
+            }).then(results=>{
+              logger.info("vendor inserted/created successfully");
             mailUtil.sendMail(vendor.email, vendor_qrCode, vendor.name, "", "", "", true, false, "");
+            var country="",registrationAlertMail=require('../utils/vendor-registration-alert');
+            if(1==vendor.country)
+            country='India';
+            else
+            country='USA';
+            registrationAlertMail.sendMail(vendor.name,vendor.phone,vendor.email,country);
             if("te_IN"==locale)
             resolve("నమోదు చేసినందుకు ధన్యవాదాలు. మీరు త్వరలో నిర్ధారణ ఇమెయిల్‌ను అందుకుంటారు. మా బృందంలో ఒకరు త్వరలో మీతో సంప్రదిస్తారు. మీ వ్యాపారానికి ధన్యవాదాలు.");
             else
             resolve("Thank you for registering. You should receive a confirmation email shortly. One of our team will be in contact with you soon. Thank you for your business.");
+            } ,error=>{
+              console.log(error);
+              logger.error("Error occured while creating the vendor_plan");
+              reject(response.status(500).send("Internal Server Error! Unable to submit your profile. One of our agents will reach you soon. For quick response, please reach our support team at Contact Us. Thank you for your business."));
+          })
+            // Sending the confirmation mail to the vendor
           }
           else{
             logger.error("vendor already exists with the provided info ::phone/email" + vendor.phone + "/" + vendor.email);

@@ -89,6 +89,12 @@ exports.update_vendor = function (qrCode, company_name, name, email, categories,
                                        include:[{
                                          model:db.gst_slabs
                                        }]
+                                     },
+                                     {
+                                        model:db.vendor_plan,
+                                        include:[{
+                                           model:db.plan
+                                        }]
                                      }
                                  ]
                               }
@@ -122,7 +128,8 @@ exports.update_vendor = function (qrCode, company_name, name, email, categories,
                                        logo: vendor.logo,
                                        show_logo: vendor.show_logo,
                                        price_book:vendor.price_book,
-                                       role:"super-admin"
+                                       role:"super-admin",
+                                       plan:vendor.vendor_plan
                                     }),
       
                                     resolve(vendor);

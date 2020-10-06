@@ -60,16 +60,16 @@ module.exports = function (app) {
   app.route('/home')
     .get(vendorController.home)
 
-  /* app.route('/uni-commerce/verify-email')
-    .get(vendorController.test) */
+  app.route('/uni-commerce/vendor/subscription-plans')
+    .get(vendorController.subscriptionList)
 
   app.route('/uni-commerce/geo-list')
     .get(vendorController.get_geo_list)
 
-    app.route('/uni-commerce/currency')
+  app.route('/uni-commerce/currency')
     .get(vendorController.currencies)
 
-    app.route('/uni-commerce/product-family')
+  app.route('/uni-commerce/product-family')
     .get(vendorController.productFamily)
 
   app.route('/uni-commerce/countries')
@@ -98,86 +98,86 @@ module.exports = function (app) {
     .get(vendorController.fetchSlots)
 
   app.route('/uni-commerce/confirm-slot')
-   .post(vendorController.confirmSlot)
+    .post(vendorController.confirmSlot)
 
   app.route('/signup')
-  .post(vendorController.signup)
+    .post(vendorController.signup)
 
   app.route('/confirm-registration')
-  .post(vendorController.confirmSignIn)
+    .post(vendorController.confirmSignIn)
 
   app.route('/signin')
-  .post(vendorController.signin)
+    .post(vendorController.signin)
 
   app.route('/sign-out')
-  .post(vendorController.signOut)
+    .post(vendorController.signOut)
 
   app.route('/uni-commerce/vendor/product-family')
-  .post(vendorController.add_product_family)
-  .get(vendorController.get_productFamily_by_vendor)
+    .post(vendorController.add_product_family)
+    .get(vendorController.get_productFamily_by_vendor)
 
-  app.route('/uni-commerce/product/re-store') 
-  .put(vendorController.restore_product)
+  app.route('/uni-commerce/product/re-store')
+    .put(vendorController.restore_product)
 
   app.route('/uni-commerce/vendor/bookings')
-  .get(vendorController.getBookings_by_vendor);
+    .get(vendorController.getBookings_by_vendor);
 
   app.route('/uni-commerce/vendor/bookings/approved')
-  .get(vendorController.get_approved_vendor_bookings);
-  
+    .get(vendorController.get_approved_vendor_bookings);
+
   app.route('/uni-commerce/vendor/bookings/rejected')
-  .get(vendorController.get_rejected_vendor_bookings);
+    .get(vendorController.get_rejected_vendor_bookings);
 
   app.route('/uni-commerce/user/confirmRegistration')
-   .post(vendorController.confirmRegistration)
-  
+    .post(vendorController.confirmRegistration)
+
   app.route('/uni-commerce/customer/order')
-   .post(vendorController.process_Order)
+    .post(vendorController.process_Order)
 
   app.route('/uni-commerce/vendor/orders')
     .get(vendorController.getOrderList)
- 
+
   app.route('/uni-commerce/vendor/order/details')
     .get(vendorController.getOrderDetails)
 
-    app.route('/uni-commerce/vendor/order/payment-reminder')
+  app.route('/uni-commerce/vendor/order/payment-reminder')
     .post(vendorController.remindOrderPayment)
 
-    app.route('/uni-commerce/vendor/order/payment')
+  app.route('/uni-commerce/vendor/order/payment')
     .put(vendorController.updateOrderPayment)
 
-    app.route('/uni-commerce/vendor/order/shipment')
+  app.route('/uni-commerce/vendor/order/shipment')
     .put(vendorController.updateShipmentDetails)
 
-    app.route('/uni-commerce/order/payment-type')
+  app.route('/uni-commerce/order/payment-type')
     .get(vendorController.paymentType)
 
-    app.route('/uni-commerce/order/payment-status')
+  app.route('/uni-commerce/order/payment-status')
     .get(vendorController.paymentStatus)
 
-    app.route('/uni-commerce/order/order-status')
+  app.route('/uni-commerce/order/order-status')
     .get(vendorController.orderStatus)
 
-    app.route('/uni-commerce/order/shipment-type')
+  app.route('/uni-commerce/order/shipment-type')
     .get(vendorController.shipmentType)
 
-    app.route('/uni-commerce/order/status')
+  app.route('/uni-commerce/order/status')
     .put(vendorController.updateOrderStatusDetails)
 
-    app.route('/uni-commerce/loadStates')
+  app.route('/uni-commerce/loadStates')
     .get(vendorController.loadStates)
 
-    app.route('/uni-commerce/loadCities')
+  app.route('/uni-commerce/loadCities')
     .get(vendorController.loadCities)
 
-    app.route('/uni-commerce/vendor/price-book')
-   .post(vendorController.add_price_book)
+  app.route('/uni-commerce/vendor/price-book')
+    .post(vendorController.add_price_book)
 
-   app.route('/uni-commerce/vendor/alias')
-   .post(vendorController.create_vendor_alias)
-   .put(vendorController.update_vendor_alias) 
+  app.route('/uni-commerce/vendor/alias')
+    .post(vendorController.create_vendor_alias)
+    .put(vendorController.update_vendor_alias)
 
-   app.route('/uni-commerce/vendor/alias/generate-otp')
+  app.route('/uni-commerce/vendor/alias/generate-otp')
     .post(vendorController.send_vendor_alias_code)
 
   // Route to vendor OTP verification and vendor fetch after successful verification
@@ -187,10 +187,28 @@ module.exports = function (app) {
   app.route('/uni-commerce/vendor/price_book')
     .get(vendorController.fetch_price_book_by_vendor)
 
-    app.route('/uni-commerce/price-book/slabs')
+  app.route('/uni-commerce/price-book/slabs')
     .get(vendorController.fetch_gst_slabs)
 
-    app.route('/uni-commerce/vendor/alias')
+  app.route('/uni-commerce/vendor/alias')
     .get(vendorController.fetch_alias_list_by_vendor)
-};
 
+  app.route('/uni-commerce/vendor/plans')
+    .get(vendorController.plans)
+
+  app.route('/uni-commerce/vendor/plan/status')
+    .put(vendorController.update_plan_status)
+
+  app.route('/uni-commerce/vendor/plan/payment-reminder')
+    .post(vendorController.vendor_plan_payment_reminder)
+
+  app.route('/uni-commerce/vendor/plan/payment-confirmation')
+    .post(vendorController.vendor_plan_payment_confirmation)
+
+  app.route('/uni-commerce/admin/generate-otp')
+    .post(vendorController.get_admin_otp)
+
+  // Route to vendor OTP verification and vendor fetch after successful verification
+  app.route('/uni-commerce/admin/verify')
+    .post(vendorController.verify_admin_otp)
+};

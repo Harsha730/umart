@@ -78,6 +78,8 @@ exports.orderBooking = function (email, vendor_name,ref,name,phone,price,currenc
   logger.info("Email type is vendor orderBooking Email")
   // price=price.toFixed(2);
  var tax=data.order.gstTax_price.toFixed(2),total=data.order.grand_total.toFixed(2);
+ if(0.0==tax)
+  tax="Included";
  let payment_details = (
   '<table style="margin-left: 3cm;">' +
   '<thead>' +
