@@ -150,7 +150,7 @@ exports.update_vendor = function (id,response, isPhone) {
             // Sending the OTP to vendor mail
             mailUtil.sendMail(id, "", "", "", "", "", false, true, otp);
             logger.info("OTP sent successfully");
-            resolve("OTP successfully sent to your registered email . Thank you for your business.");
+            resolve("OTP successfully sent to your registered email (update). Thank you for your business.");
           }
         }
         else if(null!=vendor_plan&&(0<dateDiff||false==is_active)){
